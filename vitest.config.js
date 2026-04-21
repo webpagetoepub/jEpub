@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config';
+import { ejsPrecompile } from './vite-plugin-ejs-precompile.js';
 
 export default defineConfig({
+    plugins: [ejsPrecompile()],
     test: {
         globals: true,
         environment: 'happy-dom',
