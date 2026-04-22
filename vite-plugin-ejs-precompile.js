@@ -1,7 +1,7 @@
 import lodash from 'lodash';
 const { template: lodashTemplate } = lodash;
 
-const HTML_ESCAPE_FN = `function(s){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};return s==null?'':String(s).replace(/[&<>"']/g,function(c){return m[c];});}`;
+const HTML_ESCAPE_FN = `function escapeFallback(s){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};return s==null?'':String(s).replace(/[&<>"']/g,function(c){return m[c];});}`;
 
 export function ejsPrecompile() {
     return {
@@ -15,17 +15,14 @@ export function ejsPrecompile() {
                 escape: /<%=([\s\S]+?)%>/g,
                 interpolate: /<%-([^>]+?)%>/g,
                 evaluate: /<%(?![=-])([\s\S]+?)%>/g,
+                variable: 'data',
             });
 
-            // Extract function body (strip outer "function(obj){" and closing "}")
-            // Use new Function so the with-statement works outside strict mode
             const body = compiled.source
-                .replace(/^[^{]+\{/, '')
-                .replace(/\}\s*$/, '')
-                .replace('_.escape', `(${HTML_ESCAPE_FN})`);
+                .replace('_.escape', `escapeFallback`);
 
             return {
-                code: `export default new Function('obj', ${JSON.stringify(body)});`,
+                code: `${HTML_ESCAPE_FN};export default ${body};`,
                 map: null,
             };
         },
