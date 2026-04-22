@@ -2,9 +2,9 @@ import lodash from 'lodash';
 import minifyXML from "minify-xml";
 const { template: lodashTemplate } = lodash;
 
-const HTML_ESCAPE_FN = `function escapeFallback(s){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};return s==null?'':String(s).replace(/[&<>"']/g,function(c){return m[c];});}`;
+const ESCAPE_FALLBACK = `function escapeFallback(s){var m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};return s==null?'':String(s).replace(/[&<>"']/g,function(c){return m[c];});}`;
 const XML_PROLOG_REGEX = /(<\?xml\s*version="1.0"\s*encoding="UTF-8"\s*\?>)\s*/;
-const XHTML_DOCTYPE_REGEX = /(<!DOCTYPE\s*html\s*PUBLIC\s*"-\/\/W3C\/\/DTD\s*XHTML\s*1\.1\/\/EN"\s*"http:\/\/www\.w3\.org\/TR\/xhtml11\/DTD\/xhtml11\.dtd">)\s*/;
+const XML_DOCTYPE_REGEX = /(<!DOCTYPE\s*html\s*PUBLIC\s*"-\/\/W3C\/\/DTD\s*XHTML\s*1\.1\/\/EN"\s*"http:\/\/www\.w3\.org\/TR\/xhtml11\/DTD\/xhtml11\.dtd">)\s*/;
 
 export function ejsPrecompile() {
     return {
@@ -31,7 +31,7 @@ export function ejsPrecompile() {
                 });
                 template = template
                     .replace(XML_PROLOG_REGEX, (_, expr) => `${expr}\n`)
-                    .replace(XHTML_DOCTYPE_REGEX, (_, expr) => `${expr}\n`);
+                    .replace(XML_DOCTYPE_REGEX, (_, expr) => `${expr}\n`);
             }
 
             const compiled = lodashTemplate(template, {
@@ -46,7 +46,7 @@ export function ejsPrecompile() {
                 .replace('_.escape', `escapeFallback`);
 
             return {
-                code: `${HTML_ESCAPE_FN};export default ${body};`,
+                code: `${ESCAPE_FALLBACK};export default ${body};`,
                 map: null,
             };
         },
