@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
 import banner from 'vite-plugin-banner';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { ejsPrecompile } from './vite-plugin-ejs-precompile.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const PACKAGE = JSON.parse(
@@ -22,11 +23,10 @@ export default defineConfig({
         },
 
         rollupOptions: {
-            external: ['jszip', 'ejs'], // Externalize dependencies
+            external: ['jszip'],
             output: {
                 globals: {
                     jszip: 'JSZip',
-                    ejs: 'ejs',
                 },
             },
             onwarn(warning, warn) {
@@ -66,6 +66,7 @@ export default defineConfig({
     },
 
     plugins: [
+        ejsPrecompile(),
         banner(bannerText),
         nodePolyfills({
             include: [], // Minimal polyfills
@@ -78,11 +79,7 @@ export default defineConfig({
         }),
     ],
 
-    define: {
-        global: 'globalThis', // For EJS compatibility
-    },
-
     optimizeDeps: {
-        include: ['ejs', 'jszip', '@xmldom/xmldom'],
+        include: ['jszip', '@xmldom/xmldom'],
     },
 });
