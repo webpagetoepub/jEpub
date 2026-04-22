@@ -160,13 +160,6 @@ describe('jEpub Error Handling', () => {
             expect(() => epub.add('Title', '   ')).not.toThrow();
             expect(() => epub.add('Title', null)).not.toThrow();
         });
-        it('should handle invalid template content gracefully', () => {
-            // Template with undefined variable - EJS will throw ReferenceError
-            const invalidTemplate = '<p>Hello <%= valid_syntax %></p>';
-            expect(() => epub.add('Test', invalidTemplate)).toThrow(
-                /valid_syntax is not defined|ReferenceError/
-            );
-        });
     });
 
     describe('Generation Errors', () => {

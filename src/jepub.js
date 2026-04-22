@@ -1,22 +1,20 @@
 'use strict';
 
 import JSZip from 'jszip';
-import ejs from 'ejs';
 import * as utils from './utils/index.js';
 import { detectImageType } from './utils/mime.js';
 
 import language from './i18n.json';
 
-// Template imports using Vite's native ?raw suffix for text content
 import container from './tpl/META-INF/container.xml?raw';
-import cover from './tpl/OEBPS/front-cover.html.ejs?raw';
-import notes from './tpl/OEBPS/notes.html.ejs?raw';
-import page from './tpl/OEBPS/page.html.ejs?raw';
-import tocInBook from './tpl/OEBPS/table-of-contents.html.ejs?raw';
-import info from './tpl/OEBPS/title-page.html.ejs?raw';
-import bookConfig from './tpl/book.opf.ejs?raw';
 import mime from './tpl/mimetype?raw';
-import toc from './tpl/toc.ncx.ejs?raw';
+import renderCover from './tpl/OEBPS/front-cover.html.ejs';
+import renderNotes from './tpl/OEBPS/notes.html.ejs';
+import renderPage from './tpl/OEBPS/page.html.ejs';
+import renderTocInBook from './tpl/OEBPS/table-of-contents.html.ejs';
+import renderInfo from './tpl/OEBPS/title-page.html.ejs';
+import renderBookConfig from './tpl/book.opf.ejs';
+import renderToc from './tpl/toc.ncx.ejs';
 
 export default class jEpub {
     constructor() {
@@ -72,20 +70,14 @@ export default class jEpub {
         this._Zip.file('META-INF/container.xml', container);
         this._Zip.file(
             'OEBPS/title-page.html',
-            ejs.render(
-                info,
-                {
-                    i18n: this._I18n,
-                    title: this._Info.title,
-                    author: this._Info.author,
-                    publisher: this._Info.publisher,
-                    description: utils.parseDOM(this._Info.description),
-                    tags: this._Info.tags,
-                },
-                {
-                    client: true,
-                }
-            )
+            renderInfo({
+                i18n: this._I18n,
+                title: this._Info.title,
+                author: this._Info.author,
+                publisher: this._Info.publisher,
+                description: utils.parseDOM(this._Info.description),
+                tags: this._Info.tags,
+            })
         );
 
         return this;
@@ -165,16 +157,10 @@ export default class jEpub {
         this._Zip.file(this._Cover.path, data);
         this._Zip.file(
             'OEBPS/front-cover.html',
-            ejs.render(
-                cover,
-                {
-                    i18n: this._I18n,
-                    cover: this._Cover,
-                },
-                {
-                    client: true,
-                }
-            )
+            renderCover({
+                i18n: this._I18n,
+                cover: this._Cover,
+            })
         );
         return this;
     }
@@ -221,16 +207,10 @@ export default class jEpub {
         } else {
             this._Zip.file(
                 'OEBPS/notes.html',
-                ejs.render(
-                    notes,
-                    {
-                        i18n: this._I18n,
-                        notes: utils.parseDOM(content),
-                    },
-                    {
-                        client: true,
-                    }
-                )
+                renderNotes({
+                    i18n: this._I18n,
+                    notes: utils.parseDOM(content),
+                })
             );
             return this;
         }
@@ -258,38 +238,24 @@ export default class jEpub {
         }
 
         if (content && !Array.isArray(content)) {
-            const template = ejs.compile(content, {
-                client: true,
+            const images = this._Images;
+            const fallback =
+                'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+            content = content.replace(/<%=[\s]*image\[['"]([\S]*?)['"]\][\s]*%>/g, (_, expr) => {
+                const img = images[expr.trim()];
+                return `<img src="${img ? img.path : fallback}" alt=""></img>`;
             });
-            content = template(
-                {
-                    image: this._Images,
-                },
-                (data) => {
-                    return `<img src="${
-                        data
-                            ? data.path
-                            : 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs='
-                    }" alt=""></img>`;
-                }
-            );
             content = utils.parseDOM(content);
         }
 
         const pageId = this._Pages.length;
         this._Zip.file(
             `OEBPS/page-${pageId}.html`,
-            ejs.render(
-                page,
-                {
-                    i18n: this._I18n,
-                    title,
-                    content,
-                },
-                {
-                    client: true,
-                }
-            )
+            renderPage({
+                i18n: this._I18n,
+                title,
+                content,
+            })
         );
         this._Pages.push({
             title,
@@ -313,58 +279,40 @@ export default class jEpub {
 
         this._Zip.file(
             'book.opf',
-            ejs.render(
-                bookConfig,
-                {
-                    i18n: this._I18n,
-                    uuid: this._Uuid,
-                    date: this._Date,
-                    title: this._Info.title,
-                    author: this._Info.author,
-                    publisher: this._Info.publisher,
-                    description: utils.html2text(this._Info.description, true),
-                    tags: this._Info.tags,
-                    cover: this._Cover,
-                    pages: this._Pages,
-                    notes,
-                    images: this._Images,
-                },
-                {
-                    client: true,
-                }
-            )
+            renderBookConfig({
+                i18n: this._I18n,
+                uuid: this._Uuid,
+                date: this._Date,
+                title: this._Info.title,
+                author: this._Info.author,
+                publisher: this._Info.publisher,
+                description: utils.html2text(this._Info.description, true),
+                tags: this._Info.tags,
+                cover: this._Cover,
+                pages: this._Pages,
+                notes,
+                images: this._Images,
+            })
         );
 
         this._Zip.file(
             'OEBPS/table-of-contents.html',
-            ejs.render(
-                tocInBook,
-                {
-                    i18n: this._I18n,
-                    pages: this._Pages,
-                },
-                {
-                    client: true,
-                }
-            )
+            renderTocInBook({
+                i18n: this._I18n,
+                pages: this._Pages,
+            })
         );
 
         this._Zip.file(
             'toc.ncx',
-            ejs.render(
-                toc,
-                {
-                    i18n: this._I18n,
-                    uuid: this._Uuid,
-                    title: this._Info.title,
-                    author: this._Info.author,
-                    pages: this._Pages,
-                    notes,
-                },
-                {
-                    client: true,
-                }
-            )
+            renderToc({
+                i18n: this._I18n,
+                uuid: this._Uuid,
+                title: this._Info.title,
+                author: this._Info.author,
+                pages: this._Pages,
+                notes,
+            })
         );
 
         return this._Zip.generateAsync(
