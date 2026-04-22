@@ -2,11 +2,6 @@
  * DOM parsing and HTML utilities
  */
 
-import {
-    DOMParser as NodeDOMParser,
-    XMLSerializer as NodeXMLSerializer,
-} from '@xmldom/xmldom';
-
 /**
  * Convert HTML to valid XHTML or plain text
  * @param {string} html - HTML string to parse
@@ -19,15 +14,8 @@ export function parseDOM(html, outText = false) {
         return '';
     }
 
-    // Use global DOM when available (browser/happy-dom) or fallback to xmldom for Node.js
-    const DOMParserToUse =
-        typeof globalThis.DOMParser !== 'undefined'
-            ? globalThis.DOMParser
-            : NodeDOMParser;
-    const XMLSerializerToUse =
-        typeof globalThis.XMLSerializer !== 'undefined'
-            ? globalThis.XMLSerializer
-            : NodeXMLSerializer;
+    const DOMParserToUse = globalThis.DOMParser;
+    const XMLSerializerToUse = globalThis.XMLSerializer;
 
     const doc = new DOMParserToUse().parseFromString(
         `<!doctype html><body>${html}</body>`,
