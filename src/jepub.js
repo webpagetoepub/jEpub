@@ -241,11 +241,8 @@ export default class jEpub {
             const images = this._Images;
             const fallback =
                 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
-            content = content.replace(/<%=([\s\S]*?)%>/g, (_, expr) => {
-                const img = new Function(
-                    'image',
-                    `return (${expr.trim()})`
-                ).call(null, images);
+            content = content.replace(/<%=[\s]*image\[['"]([\S]*?)['"]\][\s]*%>/g, (_, expr) => {
+                const img = images[expr.trim()];
                 return `<img src="${img ? img.path : fallback}" alt=""></img>`;
             });
             content = utils.parseDOM(content);
