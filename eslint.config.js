@@ -25,7 +25,7 @@ export default [
                 Uint8Array: 'readonly',
 
                 // Library globals (external dependencies)
-                JSZip: 'readonly',
+                fflate: 'readonly',
                 jEpub: 'readonly',
             },
         },
@@ -127,7 +127,7 @@ export default [
                 Uint8Array: 'readonly',
 
                 // Library globals
-                JSZip: 'readonly',
+                fflate: 'readonly',
                 jEpub: 'readonly',
             },
         },

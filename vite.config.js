@@ -23,10 +23,10 @@ export default defineConfig({
         },
 
         rollupOptions: {
-            external: ['jszip'],
+            external: ['fflate'],
             output: {
                 globals: {
-                    jszip: 'JSZip',
+                    fflate: 'fflate',
                 },
             },
             onwarn(warning, warn) {
@@ -80,6 +80,6 @@ export default defineConfig({
     ],
 
     optimizeDeps: {
-        include: ['jszip', '@xmldom/xmldom'],
+        include: ['fflate', '@xmldom/xmldom'],
     },
 });

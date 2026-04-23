@@ -1,6 +1,6 @@
 'use strict';
 
-import JSZip from 'jszip';
+import { zip, strToU8 } from 'fflate';
 import * as utils from './utils/index.js';
 import { detectImageType } from './utils/mime.js';
 
@@ -27,20 +27,15 @@ export default class jEpub {
         this._Pages = []; // Array<string> - Array of page titles
         this._Images = []; // Array<Object> - Array of image objects with type and path
 
-        this._Zip = {}; // JSZip - ZIP file handler
+        this._Zip = {}; // fflate files store { path: data }
     }
 
     /**
      * Initialize the jEpub instance
-     * @param {Object | JSZip} details - Book details object or existing JSZip instance
+     * @param {Object} details - Book details object
      * @returns {jEpub} - Returns this instance for method chaining
      */
     init(details) {
-        if (details instanceof JSZip) {
-            this._Zip = details;
-            return this;
-        }
-
         this._Info = Object.assign(
             {},
             {
@@ -65,20 +60,17 @@ export default class jEpub {
             throw `Unknown Language: ${this._Info.i18n}`;
         this._I18n = language[this._Info.i18n];
 
-        this._Zip = new JSZip();
-        this._Zip.file('mimetype', mime);
-        this._Zip.file('META-INF/container.xml', container);
-        this._Zip.file(
-            'OEBPS/title-page.html',
-            renderInfo({
-                i18n: this._I18n,
-                title: this._Info.title,
-                author: this._Info.author,
-                publisher: this._Info.publisher,
-                description: utils.parseDOM(this._Info.description),
-                tags: this._Info.tags,
-            })
-        );
+        this._Zip = {};
+        this._Zip['mimetype'] = mime;
+        this._Zip['META-INF/container.xml'] = container;
+        this._Zip['OEBPS/title-page.html'] = renderInfo({
+            i18n: this._I18n,
+            title: this._Info.title,
+            author: this._Info.author,
+            publisher: this._Info.publisher,
+            description: utils.parseDOM(this._Info.description),
+            tags: this._Info.tags,
+        });
 
         return this;
     }
@@ -154,14 +146,11 @@ export default class jEpub {
             type: mime,
             path: `OEBPS/cover-image.${ext}`,
         };
-        this._Zip.file(this._Cover.path, data);
-        this._Zip.file(
-            'OEBPS/front-cover.html',
-            renderCover({
-                i18n: this._I18n,
-                cover: this._Cover,
-            })
-        );
+        this._Zip[this._Cover.path] = data;
+        this._Zip['OEBPS/front-cover.html'] = renderCover({
+            i18n: this._I18n,
+            cover: this._Cover,
+        });
         return this;
     }
 
@@ -191,7 +180,7 @@ export default class jEpub {
             type: mime,
             path: filePath,
         };
-        this._Zip.file(`OEBPS/${filePath}`, data);
+        this._Zip[`OEBPS/${filePath}`] = data;
         return this;
     }
 
@@ -205,13 +194,10 @@ export default class jEpub {
         if (utils.isEmpty(content)) {
             throw 'Notes is empty';
         } else {
-            this._Zip.file(
-                'OEBPS/notes.html',
-                renderNotes({
-                    i18n: this._I18n,
-                    notes: utils.parseDOM(content),
-                })
-            );
+            this._Zip['OEBPS/notes.html'] = renderNotes({
+                i18n: this._I18n,
+                notes: utils.parseDOM(content),
+            });
             return this;
         }
     }
@@ -249,14 +235,11 @@ export default class jEpub {
         }
 
         const pageId = this._Pages.length;
-        this._Zip.file(
-            `OEBPS/page-${pageId}.html`,
-            renderPage({
-                i18n: this._I18n,
-                title,
-                content,
-            })
-        );
+        this._Zip[`OEBPS/page-${pageId}.html`] = renderPage({
+            i18n: this._I18n,
+            title,
+            content,
+        });
         this._Pages.push({
             title,
             level,
@@ -272,59 +255,80 @@ export default class jEpub {
      * @throws {string} - Throws error if browser doesn't support the specified type
      */
     generate(type = 'blob', onUpdate) {
-        if (!JSZip.support[type]) throw `This browser does not support ${type}`;
+        const supported = new Set(['blob', 'arraybuffer', 'uint8array', 'base64']);
+        if (!supported.has(type)) throw `This browser does not support ${type}`;
 
-        let notes = this._Zip.file('OEBPS/notes.html'); // JSZip.JSZipObject | null - Notes file reference
-        notes = !notes ? false : true; // boolean - Whether notes exist
+        const notes = 'OEBPS/notes.html' in this._Zip;
 
-        this._Zip.file(
-            'book.opf',
-            renderBookConfig({
-                i18n: this._I18n,
-                uuid: this._Uuid,
-                date: this._Date,
-                title: this._Info.title,
-                author: this._Info.author,
-                publisher: this._Info.publisher,
-                description: utils.html2text(this._Info.description, true),
-                tags: this._Info.tags,
-                cover: this._Cover,
-                pages: this._Pages,
-                notes,
-                images: this._Images,
-            })
-        );
+        this._Zip['book.opf'] = renderBookConfig({
+            i18n: this._I18n,
+            uuid: this._Uuid,
+            date: this._Date,
+            title: this._Info.title,
+            author: this._Info.author,
+            publisher: this._Info.publisher,
+            description: utils.html2text(this._Info.description, true),
+            tags: this._Info.tags,
+            cover: this._Cover,
+            pages: this._Pages,
+            notes,
+            images: this._Images,
+        });
 
-        this._Zip.file(
-            'OEBPS/table-of-contents.html',
-            renderTocInBook({
-                i18n: this._I18n,
-                pages: this._Pages,
-            })
-        );
+        this._Zip['OEBPS/table-of-contents.html'] = renderTocInBook({
+            i18n: this._I18n,
+            pages: this._Pages,
+        });
 
-        this._Zip.file(
-            'toc.ncx',
-            renderToc({
-                i18n: this._I18n,
-                uuid: this._Uuid,
-                title: this._Info.title,
-                author: this._Info.author,
-                pages: this._Pages,
-                notes,
-            })
-        );
+        this._Zip['toc.ncx'] = renderToc({
+            i18n: this._I18n,
+            uuid: this._Uuid,
+            title: this._Info.title,
+            author: this._Info.author,
+            pages: this._Pages,
+            notes,
+        });
 
-        return this._Zip.generateAsync(
-            {
-                type,
-                mimeType: mime,
-                compression: 'DEFLATE',
-                compressionOptions: {
-                    level: 9,
-                },
-            },
-            onUpdate
-        );
+        return (async () => {
+            const fflateFiles = {};
+            for (const [path, content] of Object.entries(this._Zip)) {
+                let data;
+                if (typeof content === 'string') {
+                    data = strToU8(content);
+                } else if (content instanceof Blob) {
+                    data = new Uint8Array(await content.arrayBuffer());
+                } else if (content instanceof ArrayBuffer) {
+                    data = new Uint8Array(content);
+                } else {
+                    data = content;
+                }
+                fflateFiles[path] = path === 'mimetype' ? [data, { level: 0 }] : [data, { level: 9 }];
+            }
+
+            return new Promise((resolve, reject) => {
+                zip(fflateFiles, (err, data) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    if (onUpdate) {
+                        onUpdate({ percent: 100 });
+                    }
+                    if (type === 'uint8array') {
+                        return resolve(data);
+                    }
+                    if (type === 'arraybuffer') {
+                        return resolve(data.buffer);
+                    }
+                    if (type === 'base64') {
+                        if (typeof globalThis.btoa !== 'undefined') {
+                            return resolve(globalThis.btoa(Array.from(data, (b) => String.fromCharCode(b)).join('')));
+                        }
+
+                        return globalThis.Buffer.from(data).toString('base64');
+                    }
+                    resolve(new Blob([data], { type: mime }));
+                });
+            });
+        })();
     }
 }

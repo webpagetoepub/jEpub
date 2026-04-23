@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "jepub": "file:../../",
-    "jszip": "^3.10.1"
+    "fflate": "^0.8.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

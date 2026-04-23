@@ -39,7 +39,7 @@ The example includes:
 
 The example loads these external dependencies via CDN:
 
-- JSZip: `https://unpkg.com/jszip/dist/jszip.min.js`
+- fflate: `https://unpkg.com/fflate@0.8.2/umd/index.js`
 - jEpub: `../../dist/jepub.js` (local build)
 
 ## Key Features Demonstrated
