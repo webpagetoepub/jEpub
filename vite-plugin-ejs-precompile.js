@@ -42,13 +42,16 @@ export function ejsPrecompile() {
                 variable: 'data',
             });
 
-            const body = compiled.source
-                .replace('_.escape', `escapeFallback`);
+            const functionSource = compiled.source;
+            const exportedFunctionSource = functionSource
+                .replace('_.escape', 'escapeFallback');
 
-            return {
-                code: `${ESCAPE_FALLBACK};export default ${body};`,
-                map: null,
-            };
+            let code = `export default ${exportedFunctionSource}`;
+            if (functionSource.includes('_.escape')) {
+                code = `${ESCAPE_FALLBACK};${code}`;
+            }
+
+            return { code, map: null };
         },
     };
 }
