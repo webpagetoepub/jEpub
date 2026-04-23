@@ -13,7 +13,7 @@ Simple EPUB builder library, works in modern browsers.
 - 🌐 Internationalization support (21+ languages)
 - 📱 Modern ES modules and UMD builds
 - 🖼️ Image and cover support
-- 📝 HTML content with EJS templating
+- 📝 HTML content
 
 ## Demo
 
@@ -51,10 +51,9 @@ For ES modules:
 
 ### Dependencies
 
-jEpub requires [JSZip](https://github.com/Stuk/jszip) and
-[EJS](https://github.com/mde/ejs) as **external dependencies**.
+jEpub requires [JSZip](https://github.com/Stuk/jszip)
 
-⚠️ **Important**: Starting from v2+, JSZip and EJS are **not bundled** with
+⚠️ **Important**: Starting from v2+, JSZip are **not bundled** with
 jEpub. You need to include them separately.
 
 ### For UMD builds (browser usage)
@@ -64,7 +63,6 @@ Make sure these libraries are loaded before jEpub:
 ```html
 <!-- Required dependencies -->
 <script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
-<script src="https://unpkg.com/ejs/ejs.min.js"></script>
 
 <!-- jEpub library -->
 <script src="https://unpkg.com/jepub/dist/jepub.js"></script>
@@ -80,7 +78,7 @@ Make sure these libraries are loaded before jEpub:
 You need to install dependencies separately:
 
 ```bash
-npm install jepub jszip ejs
+npm install jepub jszip
 ```
 
 ```javascript

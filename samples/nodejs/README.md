@@ -146,7 +146,6 @@ The script generates:
 - ✅ Custom publication dates and UUIDs
 - ✅ Cover and multiple content images
 - ✅ Rich HTML content with CSS styling
-- ✅ EJS templating for dynamic content
 - ✅ Mixed content types (HTML + arrays)
 - ✅ Comprehensive notes section
 - ✅ Progress callbacks with detailed reporting
