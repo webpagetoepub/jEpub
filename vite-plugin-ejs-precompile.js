@@ -30,6 +30,7 @@ export function ejsPrecompile() {
                     shortenNamespaces: false,
                 });
                 template = template
+                    .replace(/\s\s*/g, ' ')
                     .replace(XML_PROLOG_REGEX, (_, expr) => `${expr}\n`)
                     .replace(XML_DOCTYPE_REGEX, (_, expr) => `${expr}\n`);
             }
