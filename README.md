@@ -51,9 +51,9 @@ For ES modules:
 
 ### Dependencies
 
-jEpub requires [JSZip](https://github.com/Stuk/jszip)
+jEpub requires [fflate](https://github.com/101arrowz/fflate)
 
-⚠️ **Important**: Starting from v2+, JSZip are **not bundled** with
+⚠️ **Important**: Starting from v2+, fflate are **not bundled** with
 jEpub. You need to include them separately.
 
 ### For UMD builds (browser usage)
@@ -62,7 +62,7 @@ Make sure these libraries are loaded before jEpub:
 
 ```html
 <!-- Required dependencies -->
-<script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+<script src="https://unpkg.com/fflate@0.8.2/umd/index.js"></script>
 
 <!-- jEpub library -->
 <script src="https://unpkg.com/jepub/dist/jepub.js"></script>
@@ -78,7 +78,7 @@ Make sure these libraries are loaded before jEpub:
 You need to install dependencies separately:
 
 ```bash
-npm install jepub jszip
+npm install jepub fflate
 ```
 
 ```javascript
@@ -124,9 +124,9 @@ const jepub = new jEpub();
 
 ### Methods
 
-#### `init(details: jEpubInitDetails | JSZip): this`
+#### `init(details: jEpubInitDetails): this`
 
-Initialize the EPUB with book details or existing JSZip instance.
+Initialize the EPUB with book details.
 
 ```typescript
 interface jEpubInitDetails {

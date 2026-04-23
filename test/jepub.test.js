@@ -50,15 +50,8 @@ describe('jEpub Class', () => {
             expect(epub._Info.i18n).toBe('en');
             expect(epub._Uuid.scheme).toBe('uuid');
             expect(epub._Date).toBeTruthy();
-            expect(epub._Zip).toBeInstanceOf(JSZip);
-        });
-
-        it('should accept existing JSZip instance', () => {
-            const existingZip = new JSZip();
-            const result = epub.init(existingZip);
-
-            expect(result).toBe(epub);
-            expect(epub._Zip).toBe(existingZip);
+            expect(epub._Zip).toBeTypeOf('object');
+            expect(epub._Zip).not.toBeInstanceOf(JSZip);
         });
 
         it('should throw error for unknown language', () => {
@@ -234,8 +227,7 @@ describe('jEpub Class', () => {
 
             expect(result).toBe(epub);
             // Verify notes file was added to zip
-            const notesFile = epub._Zip.file('OEBPS/notes.html');
-            expect(notesFile).toBeTruthy();
+            expect(epub._Zip['OEBPS/notes.html']).toBeTruthy();
         });
 
         it('should throw error for empty notes', () => {
@@ -259,8 +251,7 @@ describe('jEpub Class', () => {
             expect(epub._Pages[0].title).toBe(title);
 
             // Verify page file was added to zip
-            const pageFile = epub._Zip.file('OEBPS/page-0.html');
-            expect(pageFile).toBeTruthy();
+            expect(epub._Zip['OEBPS/page-0.html']).toBeTruthy();
         });
 
         it('should add page at specific index', () => {

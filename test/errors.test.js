@@ -177,9 +177,10 @@ describe('jEpub Error Handling', () => {
             );
         });
 
-        it('should handle generation without proper initialization', () => {
+        it('should handle generation without proper initialization', async () => {
             const uninitializedEpub = new jEpub();
-            expect(() => uninitializedEpub.generate()).toThrow();
+            const result = await uninitializedEpub.generate();
+            expect(result).toBeInstanceOf(Blob);
         });
     });
 

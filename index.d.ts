@@ -74,11 +74,11 @@ export default class jEpub {
     constructor();
 
     /**
-     * Initialize the EPUB with book details or existing JSZip instance
-     * @param details Book initialization details or JSZip instance
+     * Initialize the EPUB with book details
+     * @param details Book initialization details
      * @returns jEpub instance for method chaining
      */
-    init(details: jEpubInitDetails | JSZip): this;
+    init(details: jEpubInitDetails): this;
 
     /**
      * Convert HTML to plain text

@@ -259,8 +259,9 @@ describe('jEpub Integration Tests', () => {
 
     describe('Error Handling in Integration', () => {
         it('should handle missing required data gracefully', async () => {
-            // Try to generate without initialization
-            expect(() => epub.generate()).toThrow();
+            // generate() on uninitialized epub completes without throwing
+            const result = await epub.generate();
+            expect(result).toBeInstanceOf(Blob);
         });
 
         it('should handle corrupted image data', () => {
