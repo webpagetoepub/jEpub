@@ -223,7 +223,6 @@ Each example has its own `package.json` with specific dependencies:
 
 - **jEpub**: Main library (linked locally)
 - **JSZip**: ZIP file creation
-- **EJS**: Template processing
 - **Type definitions**: For TypeScript example
 
 ### Testing Examples

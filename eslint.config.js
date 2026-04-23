@@ -26,7 +26,6 @@ export default [
 
                 // Library globals (external dependencies)
                 JSZip: 'readonly',
-                ejs: 'readonly',
                 jEpub: 'readonly',
             },
         },
@@ -129,7 +128,6 @@ export default [
 
                 // Library globals
                 JSZip: 'readonly',
-                ejs: 'readonly',
                 jEpub: 'readonly',
             },
         },
