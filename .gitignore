@@ -127,4 +127,4 @@ Temporary Items
 .apdisk
 
 # Build-related directories
-dist/
+#dist/

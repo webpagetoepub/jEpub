@@ -18,8 +18,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "test:watch": "vitest --watch",
-    "postinstall": "vite build"
+    "test:watch": "vitest --watch"
   },
   "repository": {
     "type": "git",
