@@ -19,7 +19,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
-    "preinstall": "vite build"
+    "postinstall": "vite build"
   },
   "repository": {
     "type": "git",
