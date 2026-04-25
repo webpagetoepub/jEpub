@@ -324,7 +324,11 @@ function renderBookConfig(data) {
   if (data.cover) {
     __p += ' <item id="front-cover" href="OEBPS/front-cover.html" media-type="application/xhtml+xml"/>';
   }
-  __p += ' <item id="title-page" href="OEBPS/title-page.html" media-type="application/xhtml+xml"/><item id="notes" href="OEBPS/notes.html" media-type="application/xhtml+xml"/><item id="table-of-contents" href="OEBPS/table-of-contents.html" media-type="application/xhtml+xml"/>';
+  __p += ' <item id="title-page" href="OEBPS/title-page.html" media-type="application/xhtml+xml"/>';
+  if (data.notes) {
+    __p += ' <item id="notes" href="OEBPS/notes.html" media-type="application/xhtml+xml"/>';
+  }
+  __p += ' <item id="table-of-contents" href="OEBPS/table-of-contents.html" media-type="application/xhtml+xml"/>';
   data.pages.forEach((page, index) => {
     __p += ' <item id="page-' + __e(index) + '" href="OEBPS/page-' + __e(index) + '.html" media-type="application/xhtml+xml"/>';
   });
