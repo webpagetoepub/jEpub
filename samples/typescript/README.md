@@ -193,7 +193,6 @@ Calculates and displays comprehensive generation statistics.
 - ✅ Custom dates and UUID management
 - ✅ Cover and content image handling
 - ✅ Multiple chapter creation with rich HTML
-- ✅ EJS templating for dynamic content
 - ✅ Comprehensive notes section
 - ✅ Progress tracking with callbacks
 - ✅ Multiple output formats
@@ -236,7 +235,6 @@ The example creates a comprehensive EPUB book featuring:
 - Rich HTML formatting with CSS
 - Code examples with syntax highlighting
 - Tables and structured data
-- Embedded images with EJS templating
 - Professional documentation style
 
 ## Output

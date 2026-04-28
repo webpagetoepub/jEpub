@@ -40,18 +40,16 @@ The example includes:
 The example loads these external dependencies via CDN:
 
 - JSZip: `https://unpkg.com/jszip/dist/jszip.min.js`
-- EJS: `https://unpkg.com/ejs/ejs.min.js`
 - jEpub: `../../dist/jepub.js` (local build)
 
 ## Key Features Demonstrated
 
 1. **Initialization**: Setting up book metadata
 2. **Cover Image**: Adding cover image from file upload
-3. **Content Images**: Adding images with EJS templating
-4. **Multiple Chapters**: Dynamic chapter creation
-5. **Notes**: Adding notes page
-6. **Progress Callback**: Tracking generation progress
-7. **Error Handling**: Proper error handling and user feedback
+3. **Multiple Chapters**: Dynamic chapter creation
+4. **Notes**: Adding notes page
+5. **Progress Callback**: Tracking generation progress
+6. **Error Handling**: Proper error handling and user feedback
 
 ## Browser Compatibility
 
