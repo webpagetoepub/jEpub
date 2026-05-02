@@ -277,11 +277,11 @@ describe('jEpub Class', () => {
                 '<p>Here is an image: <%= image["test-img"] %> <img src="<%= image_path["test-img"] %>" alt="test image 2" /></p>';
             epub.add('Image Chapter', templateContent);
 
+            const pageContent = epub._Zip['OEBPS/page-0.html'];
+
             expect(epub._Pages[0].title).toBe('Image Chapter');
-            epub._Zip.file('OEBPS/page-0.html').async('string').then(data => {
-                expect(data).toContain('<img src="assets/test-img.png"');
-                expect(data).toContain('<img src="assets/test-img.png" alt="test image 2"');
-            });
+            expect(pageContent).toContain('<img src="assets/test-img.png"');
+            expect(pageContent).toContain('<img src="assets/test-img.png" alt="test image 2"');
         });
 
         it('should throw error for empty title', () => {
