@@ -194,7 +194,13 @@ const arrayBuffer = await response.arrayBuffer();
 jepub.image(arrayBuffer, 'myImage');
 ```
 
-Use in content: `<%= image['myImage'] %>`
+Use in content:
+
+```html
+<%= image['myImage'] %>
+<!-- or -->
+<img src="<%= image_path['myImage'] %>" alt="My image" />
+```
 
 #### `notes(content: string): this`
 
