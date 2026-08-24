@@ -53,8 +53,8 @@ For ES modules:
 
 jEpub requires [JSZip](https://github.com/Stuk/jszip)
 
-⚠️ **Important**: Starting from v2+, JSZip are **not bundled** with
-jEpub. You need to include them separately.
+⚠️ **Important**: Starting from v2+, JSZip are **not bundled** with jEpub. You
+need to include them separately.
 
 ### For UMD builds (browser usage)
 

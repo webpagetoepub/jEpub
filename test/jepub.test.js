@@ -606,12 +606,8 @@ describe('jEpub Class', () => {
 
             expect(ncx).toContain('<navPoint id="jepub-toc-chapter-0"');
             expect(ncx).toContain('<navPoint id="jepub-toc-chapter-1"');
-            expect(ncx).toContain(
-                'src="OEBPS/page-0.html#jepub-chapter-0"'
-            );
-            expect(ncx).toContain(
-                'src="OEBPS/page-0.html#jepub-chapter-1"'
-            );
+            expect(ncx).toContain('src="OEBPS/page-0.html#jepub-chapter-0"');
+            expect(ncx).toContain('src="OEBPS/page-0.html#jepub-chapter-1"');
             expect(tocHtml).toContain('href="page-0.html#jepub-chapter-0"');
             expect(tocHtml).toContain('href="page-0.html#jepub-chapter-1"');
         });
@@ -631,7 +627,9 @@ describe('jEpub Class', () => {
         it('should apply the increase-by-1 rule across add()/addPage boundary', () => {
             epub.add('Level 0', '<p>C</p>', 0);
             expect(() =>
-                epub.addPage([{ title: 'Level 2', content: '<p>C</p>', level: 2 }])
+                epub.addPage([
+                    { title: 'Level 2', content: '<p>C</p>', level: 2 },
+                ])
             ).toThrow(
                 'Invalid TOC hierarchy: Level can only increase by 1 (from 0 to 1)'
             );
@@ -650,9 +648,7 @@ describe('jEpub Class', () => {
                 type: 'image/png',
             });
             epub.image(mockBlob, 'pic');
-            epub.addPage([
-                { title: 'A', content: "<%= image['pic'] %>" },
-            ]);
+            epub.addPage([{ title: 'A', content: "<%= image['pic'] %>" }]);
 
             const page = await readZip(epub, 'OEBPS/page-0.html');
             expect(page).toContain('src="assets/pic.png"');
@@ -679,9 +675,9 @@ describe('jEpub Class', () => {
             expect(() =>
                 epub.addPage([{ title: '', content: '<p>A</p>' }])
             ).toThrow('Title is empty');
-            expect(() =>
-                epub.addPage([{ title: 'A', content: '' }])
-            ).toThrow('Content is empty');
+            expect(() => epub.addPage([{ title: 'A', content: '' }])).toThrow(
+                'Content is empty'
+            );
             expect(() => epub.addPage([{ title: 'A' }])).toThrow(
                 'Content is empty'
             );

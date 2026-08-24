@@ -3,7 +3,7 @@
  * Simple EPUB builder library for browsers
  */
 
-import type JSZip from "jszip";
+import type JSZip from 'jszip';
 
 /**
  * Custom attributes for an XML element
@@ -187,7 +187,11 @@ export default class jEpub {
      * @returns jEpub instance for method chaining
      * @throws Error if image data is invalid
      */
-    image(data: Blob | ArrayBuffer, name: string, attributes?: Record<string, string>): this;
+    image(
+        data: Blob | ArrayBuffer,
+        name: string,
+        attributes?: Record<string, string>
+    ): this;
 
     /**
      * Add notes page to the book
@@ -228,9 +232,7 @@ export default class jEpub {
      * @returns Promise that resolves to the generated EPUB data
      * @throws Error if browser doesn't support the specified type
      */
-    generate<
-        T extends jEpubGenerateType
-    >(
+    generate<T extends jEpubGenerateType>(
         type?: T,
         onUpdate?: jEpubUpdateCallback
     ): Promise<jEpubGenerateTypeMap[T]>;
