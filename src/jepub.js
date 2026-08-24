@@ -24,7 +24,7 @@ export default class jEpub {
         this._Date = null; // string | null - ISO date string
         this._Cover = null; // Object | null - Cover image information
 
-        this._Pages = []; // Array<Object> - Array of physical page files (drives manifest/spine)
+        this._PageCount = 0; // number - Count of physical page files (drives manifest/spine)
         this._Toc = []; // Array<Object> - Array of chapters/navigation entries (drives NCX + TOC)
         this._Images = []; // Array<Object> - Array of image objects with type and path
 
@@ -306,7 +306,7 @@ export default class jEpub {
             content = this._processContent(content);
         }
 
-        const fileIndex = this._Pages.length;
+        const fileIndex = this._PageCount;
         const chapterIndex = this._Toc.length;
         this._Zip.file(
             `OEBPS/page-${fileIndex}.html`,
@@ -315,7 +315,7 @@ export default class jEpub {
                 sections: [{ title, content, index: chapterIndex }],
             })
         );
-        this._Pages.push({ title });
+        this._PageCount++;
         this._pushToc(title, level, fileIndex, chapterIndex);
         return this;
     }
@@ -336,7 +336,7 @@ export default class jEpub {
             throw 'Chapters is empty';
         }
 
-        const fileIndex = this._Pages.length;
+        const fileIndex = this._PageCount;
         const base = this._Toc.length;
         const lastChapter = this._Toc[this._Toc.length - 1];
         let previousLevel = lastChapter ? lastChapter.level : -1;
@@ -369,7 +369,7 @@ export default class jEpub {
                 sections,
             })
         );
-        this._Pages.push({ title: sections[0].title });
+        this._PageCount++;
         sections.forEach((section) => {
             this._pushToc(
                 section.title,
@@ -407,7 +407,7 @@ export default class jEpub {
                 tags: this._Info.tags,
                 cover: this._Cover,
                 customMetadata: this._Info.customMetadata,
-                pages: this._Pages,
+                pages: this._PageCount,
                 notes,
                 images: this._Images,
             })

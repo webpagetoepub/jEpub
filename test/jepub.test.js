@@ -52,7 +52,8 @@ describe('jEpub Class', () => {
             expect(epub._Uuid).toEqual({});
             expect(epub._Date).toBe(null);
             expect(epub._Cover).toBe(null);
-            expect(epub._Pages).toEqual([]);
+            expect(epub._PageCount).toBe(0);
+            expect(epub._Toc).toEqual([]);
             expect(epub._Images).toEqual([]);
             expect(epub._Zip).toEqual({});
         });
@@ -323,7 +324,7 @@ describe('jEpub Class', () => {
             const result = epub.add(title, content);
 
             expect(result).toBe(epub);
-            expect(epub._Pages[0].title).toBe(title);
+            expect(epub._Toc[0].title).toBe(title);
 
             // Verify page file was added to zip
             const pageFile = epub._Zip.file('OEBPS/page-0.html');
@@ -335,9 +336,9 @@ describe('jEpub Class', () => {
             epub.add('Chapter 2', '<p>Content 2</p>');
             epub.add('Chapter 3', '<p>Content 3</p>');
 
-            expect(epub._Pages[0].title).toBe('Chapter 1');
-            expect(epub._Pages[1].title).toBe('Chapter 2');
-            expect(epub._Pages[2].title).toBe('Chapter 3');
+            expect(epub._Toc[0].title).toBe('Chapter 1');
+            expect(epub._Toc[1].title).toBe('Chapter 2');
+            expect(epub._Toc[2].title).toBe('Chapter 3');
         });
         it('should process template content with images', () => {
             // First add an image
@@ -352,7 +353,7 @@ describe('jEpub Class', () => {
                 '<p>Here is an image: <% if (image["test-img"]) { %><img src="<%= image["test-img"].path %>" alt="test image"><% } %></p>';
             epub.add('Image Chapter', templateContent);
 
-            expect(epub._Pages[0].title).toBe('Image Chapter');
+            expect(epub._Toc[0].title).toBe('Image Chapter');
         });
 
         it('should render image placeholder with an empty alt when no attributes provided', async () => {
@@ -463,7 +464,7 @@ describe('jEpub Class', () => {
                 epub.add('Sub Chapter 2.1', '<p>Content</p>', 1);
                 epub.add('Sub Sub Chapter 2.1.1', '<p>Content</p>', 2);
 
-                expect(epub._Pages.length).toBe(6);
+                expect(epub._PageCount).toBe(6);
                 expect(epub._Toc[0].title).toBe('Main Chapter 1');
                 expect(epub._Toc[0].level).toBe(0);
                 expect(epub._Toc[1].title).toBe('Sub Chapter 1.1');
@@ -549,7 +550,7 @@ describe('jEpub Class', () => {
 
             expect(result).toBe(epub);
             // One physical file, two chapters
-            expect(epub._Pages.length).toBe(1);
+            expect(epub._PageCount).toBe(1);
             expect(epub._Toc.length).toBe(2);
             expect(epub._Zip.file('OEBPS/page-1.html')).toBeFalsy();
 
@@ -568,7 +569,7 @@ describe('jEpub Class', () => {
             ]);
             epub.add('C', '<p>C</p>'); // page-2, chapter 3
 
-            expect(epub._Pages.length).toBe(3);
+            expect(epub._PageCount).toBe(3);
             expect(epub._Toc.length).toBe(4);
             expect(epub._Toc.map((c) => c.href)).toEqual([
                 'page-0.html#jepub-chapter-0',
@@ -699,7 +700,7 @@ describe('jEpub Class', () => {
                     { title: 'B', content: '' },
                 ])
             ).toThrow('Content is empty');
-            expect(epub._Pages.length).toBe(0);
+            expect(epub._PageCount).toBe(0);
             expect(epub._Toc.length).toBe(0);
             expect(epub._Zip.file('OEBPS/page-0.html')).toBeFalsy();
         });
@@ -774,7 +775,7 @@ describe('jEpub Class', () => {
             expect(epub._Info.title).toBe('Test Book');
             expect(epub._Date).toBe('2023-01-01T00:00:00.000Z');
             expect(epub._Uuid.id).toBe('test-uuid');
-            expect(epub._Pages[0].title).toBe('Chapter 1');
+            expect(epub._Toc[0].title).toBe('Chapter 1');
         });
     });
 });
