@@ -464,26 +464,26 @@ describe('jEpub Class', () => {
                 epub.add('Sub Sub Chapter 2.1.1', '<p>Content</p>', 2);
 
                 expect(epub._Pages.length).toBe(6);
-                expect(epub._Pages[0].title).toBe('Main Chapter 1');
-                expect(epub._Pages[0].level).toBe(0);
-                expect(epub._Pages[1].title).toBe('Sub Chapter 1.1');
-                expect(epub._Pages[1].level).toBe(1);
-                expect(epub._Pages[2].title).toBe('Sub Chapter 1.2');
-                expect(epub._Pages[2].level).toBe(1);
-                expect(epub._Pages[3].title).toBe('Main Chapter 2');
-                expect(epub._Pages[3].level).toBe(0);
-                expect(epub._Pages[4].title).toBe('Sub Chapter 2.1');
-                expect(epub._Pages[4].level).toBe(1);
-                expect(epub._Pages[5].title).toBe('Sub Sub Chapter 2.1.1');
-                expect(epub._Pages[5].level).toBe(2);
+                expect(epub._Toc[0].title).toBe('Main Chapter 1');
+                expect(epub._Toc[0].level).toBe(0);
+                expect(epub._Toc[1].title).toBe('Sub Chapter 1.1');
+                expect(epub._Toc[1].level).toBe(1);
+                expect(epub._Toc[2].title).toBe('Sub Chapter 1.2');
+                expect(epub._Toc[2].level).toBe(1);
+                expect(epub._Toc[3].title).toBe('Main Chapter 2');
+                expect(epub._Toc[3].level).toBe(0);
+                expect(epub._Toc[4].title).toBe('Sub Chapter 2.1');
+                expect(epub._Toc[4].level).toBe(1);
+                expect(epub._Toc[5].title).toBe('Sub Sub Chapter 2.1.1');
+                expect(epub._Toc[5].level).toBe(2);
             });
 
             it('should default to level 0 when level is not specified', () => {
                 epub.add('Chapter 1', '<p>Content</p>');
                 epub.add('Chapter 2', '<p>Content</p>');
 
-                expect(epub._Pages[0].level).toBe(0);
-                expect(epub._Pages[1].level).toBe(0);
+                expect(epub._Toc[0].level).toBe(0);
+                expect(epub._Toc[1].level).toBe(0);
             });
 
             it('should throw error when level increases by more than 1', () => {
@@ -529,6 +529,179 @@ describe('jEpub Class', () => {
                     epub.add('NaN Level', '<p>Content</p>', NaN)
                 ).toThrow('Level must be a non-negative number');
             });
+        });
+    });
+
+    describe('addPage method', () => {
+        beforeEach(() => {
+            epub.init(TEST_CONSTANTS.SAMPLE_EPUB_CONFIG);
+        });
+
+        async function readZip(instance, path) {
+            return instance._Zip.file(path).async('text');
+        }
+
+        it('should write a single page file with multiple chapter headings', async () => {
+            const result = epub.addPage([
+                { title: 'Chapter A', content: '<p>A</p>' },
+                { title: 'Chapter B', content: '<p>B</p>' },
+            ]);
+
+            expect(result).toBe(epub);
+            // One physical file, two chapters
+            expect(epub._Pages.length).toBe(1);
+            expect(epub._Toc.length).toBe(2);
+            expect(epub._Zip.file('OEBPS/page-1.html')).toBeFalsy();
+
+            const page = await readZip(epub, 'OEBPS/page-0.html');
+            expect(page).toContain('id="jepub-chapter-0"');
+            expect(page).toContain('id="jepub-chapter-1"');
+            expect(page).toContain('Chapter A');
+            expect(page).toContain('Chapter B');
+        });
+
+        it('should use a global chapter index across add() and addPage()', async () => {
+            epub.add('Intro', '<p>Intro</p>'); // page-0, chapter 0
+            epub.addPage([
+                { title: 'A', content: '<p>A</p>' }, // page-1, chapter 1
+                { title: 'B', content: '<p>B</p>' }, // page-1, chapter 2
+            ]);
+            epub.add('C', '<p>C</p>'); // page-2, chapter 3
+
+            expect(epub._Pages.length).toBe(3);
+            expect(epub._Toc.length).toBe(4);
+            expect(epub._Toc.map((c) => c.href)).toEqual([
+                'page-0.html#jepub-chapter-0',
+                'page-1.html#jepub-chapter-1',
+                'page-1.html#jepub-chapter-2',
+                'page-2.html#jepub-chapter-3',
+            ]);
+            expect(epub._Toc.map((c) => c.navId)).toEqual([
+                'jepub-toc-chapter-0',
+                'jepub-toc-chapter-1',
+                'jepub-toc-chapter-2',
+                'jepub-toc-chapter-3',
+            ]);
+
+            const intro = await readZip(epub, 'OEBPS/page-0.html');
+            expect(intro).toContain('id="jepub-chapter-0"');
+            const middle = await readZip(epub, 'OEBPS/page-1.html');
+            expect(middle).toContain('id="jepub-chapter-1"');
+            expect(middle).toContain('id="jepub-chapter-2"');
+        });
+
+        it('should emit fragment links and navPoint ids in NCX and TOC', async () => {
+            epub.addPage([
+                { title: 'A', content: '<p>A</p>' },
+                { title: 'B', content: '<p>B</p>', level: 1 },
+            ]);
+
+            const epubData = await epub.generate('arraybuffer');
+            const zip = await new JSZip().loadAsync(epubData);
+            const ncx = await zip.file('toc.ncx').async('text');
+            const tocHtml = await zip
+                .file('OEBPS/table-of-contents.html')
+                .async('text');
+
+            expect(ncx).toContain('<navPoint id="jepub-toc-chapter-0"');
+            expect(ncx).toContain('<navPoint id="jepub-toc-chapter-1"');
+            expect(ncx).toContain(
+                'src="OEBPS/page-0.html#jepub-chapter-0"'
+            );
+            expect(ncx).toContain(
+                'src="OEBPS/page-0.html#jepub-chapter-1"'
+            );
+            expect(tocHtml).toContain('href="page-0.html#jepub-chapter-0"');
+            expect(tocHtml).toContain('href="page-0.html#jepub-chapter-1"');
+        });
+
+        it('should nest levels within a page and validate against the previous chapter', () => {
+            expect(() =>
+                epub.addPage([
+                    { title: 'A', content: '<p>A</p>', level: 0 },
+                    { title: 'B', content: '<p>B</p>', level: 1 },
+                    { title: 'C', content: '<p>C</p>', level: 2 },
+                    { title: 'D', content: '<p>D</p>', level: 0 },
+                ])
+            ).not.toThrow();
+            expect(epub._Toc.map((c) => c.level)).toEqual([0, 1, 2, 0]);
+        });
+
+        it('should apply the increase-by-1 rule across add()/addPage boundary', () => {
+            epub.add('Level 0', '<p>C</p>', 0);
+            expect(() =>
+                epub.addPage([{ title: 'Level 2', content: '<p>C</p>', level: 2 }])
+            ).toThrow(
+                'Invalid TOC hierarchy: Level can only increase by 1 (from 0 to 1)'
+            );
+        });
+
+        it('should default level to 0 when omitted', () => {
+            epub.addPage([
+                { title: 'A', content: '<p>A</p>' },
+                { title: 'B', content: '<p>B</p>' },
+            ]);
+            expect(epub._Toc.map((c) => c.level)).toEqual([0, 0]);
+        });
+
+        it('should substitute image placeholders in content', async () => {
+            const mockBlob = new Blob([TEST_CONSTANTS.MOCK_IMAGE_DATA], {
+                type: 'image/png',
+            });
+            epub.image(mockBlob, 'pic');
+            epub.addPage([
+                { title: 'A', content: "<%= image['pic'] %>" },
+            ]);
+
+            const page = await readZip(epub, 'OEBPS/page-0.html');
+            expect(page).toContain('src="assets/pic.png"');
+        });
+
+        it('should throw for a non-array argument', () => {
+            expect(() => epub.addPage('nope')).toThrow(
+                'Chapters must be an array'
+            );
+            expect(() => epub.addPage()).toThrow('Chapters must be an array');
+        });
+
+        it('should throw for an empty array', () => {
+            expect(() => epub.addPage([])).toThrow('Chapters is empty');
+        });
+
+        it('should throw when an element is not an object', () => {
+            expect(() =>
+                epub.addPage([{ title: 'A', content: '<p>A</p>' }, 'bad'])
+            ).toThrow('Chapter must be an object');
+        });
+
+        it('should throw for empty title or content', () => {
+            expect(() =>
+                epub.addPage([{ title: '', content: '<p>A</p>' }])
+            ).toThrow('Title is empty');
+            expect(() =>
+                epub.addPage([{ title: 'A', content: '' }])
+            ).toThrow('Content is empty');
+            expect(() => epub.addPage([{ title: 'A' }])).toThrow(
+                'Content is empty'
+            );
+        });
+
+        it('should throw for an invalid level', () => {
+            expect(() =>
+                epub.addPage([{ title: 'A', content: '<p>A</p>', level: -1 }])
+            ).toThrow('Level must be a non-negative number');
+        });
+
+        it('should not write any file when validation fails mid-array', () => {
+            expect(() =>
+                epub.addPage([
+                    { title: 'A', content: '<p>A</p>' },
+                    { title: 'B', content: '' },
+                ])
+            ).toThrow('Content is empty');
+            expect(epub._Pages.length).toBe(0);
+            expect(epub._Toc.length).toBe(0);
+            expect(epub._Zip.file('OEBPS/page-0.html')).toBeFalsy();
         });
     });
 

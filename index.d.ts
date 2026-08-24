@@ -67,6 +67,15 @@ export interface jEpubInitDetails {
     customMetadata?: jEpubMetadataItem[];
 }
 
+export interface jEpubChapter {
+    /** Chapter title (rendered as the heading) */
+    title: string;
+    /** Chapter content (single HTML string, supports image placeholders) */
+    content: string;
+    /** Hierarchy level of the chapter (defaults to 0) */
+    level?: number;
+}
+
 export interface jEpubUuid {
     /** UUID scheme: 'uuid' or 'URI' */
     scheme: 'uuid' | 'URI';
@@ -201,6 +210,16 @@ export default class jEpub {
         content?: string | string[] | null,
         level?: number
     ): this;
+
+    /**
+     * Add a single page containing multiple chapters. Each chapter becomes its
+     * own navigation entry pointing to an anchor on its heading inside the
+     * shared page file.
+     * @param chapters Array of chapters ({ title, content, level }) to render into one page
+     * @returns jEpub instance for method chaining
+     * @throws Error if the input or any chapter is invalid
+     */
+    addPage(chapters: jEpubChapter[]): this;
 
     /**
      * Generate the EPUB file

@@ -222,7 +222,7 @@ jepub.notes('<p>These are my notes...</p>');
 
 #### `add(title: string, content?: string | string[] | null, level?: number): this`
 
-Add a page/chapter to the book.
+Add a page and chapter to the book.
 
 ```typescript
 // HTML content
@@ -236,6 +236,22 @@ jepub.add('Chapter 3', ['Line 1', 'Line 2', 'Line 3']);
 
 // With deep level
 jepub.add('Chapter 3.1', '<p>Content...</p>', 1);
+```
+
+#### `addPage(chapters: Array<{ title: string; content: string; level?: number }>): this`
+
+Add **multiple chapters** to a single page to the book.
+
+```typescript
+// One page, three navigable chapters
+jepub.addPage([
+  // HTML content
+  { title: 'Section 1', content: '<p>Content...</p>' },
+  // With deep level
+  { title: 'Section 1.1', content: '<p>Content...</p>', level: 1 },
+  // With images
+  { title: 'Section 2', content: '<p>Image: <%= image["myImage"] %></p>' },
+]);
 ```
 
 #### `generate(type?: jEpubGenerateType, onUpdate?: jEpubUpdateCallback): Promise<Blob | ArrayBuffer | Uint8Array | Buffer>`
