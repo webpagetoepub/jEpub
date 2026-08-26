@@ -10,6 +10,26 @@ const TEST_CONSTANTS = {
         description: 'A test book for unit testing',
         tags: ['test', 'unit-test'],
         i18n: 'en',
+        customMetadata: [
+            {
+                name: 'dc:rights',
+                value: '© 2026 Developer',
+                renderInTitlePage: true,
+                label: 'Copyright',
+            },
+            {
+                name: 'meta',
+                value: '2026-06-05',
+                attrs: { property: 'dcterms:modified' },
+                renderInTitlePage: false,
+            },
+            {
+                name: 'dc:contributor',
+                value: 'Alice',
+                renderInTitlePage: (item) =>
+                    `<div class="custom">${item.value}</div>`,
+            },
+        ],
     },
 };
 
@@ -102,11 +122,34 @@ describe('jEpub Advanced Features', () => {
                     'special-chars',
                 ],
                 i18n: 'en',
+                customMetadata: [
+                    {
+                        name: 'dc:rights',
+                        value: '© 2026 Developer',
+                        renderInTitlePage: true,
+                        label: 'Copyright',
+                    },
+                    {
+                        name: 'meta',
+                        value: '2026-06-05',
+                        attrs: { property: 'dcterms:modified' },
+                        renderInTitlePage: false,
+                    },
+                    {
+                        name: 'dc:contributor',
+                        value: 'Alice',
+                        renderInTitlePage: (item) =>
+                            `<div class="custom">${item.value}</div>`,
+                    },
+                ],
             };
 
             expect(() => epub.init(complexMetadata)).not.toThrow();
             expect(epub._Info.title).toBe(complexMetadata.title);
             expect(epub._Info.tags).toEqual(complexMetadata.tags);
+            expect(epub._Info.customMetadata).toEqual(
+                complexMetadata.customMetadata
+            );
         });
 
         it('should handle empty optional fields', () => {
@@ -120,6 +163,7 @@ describe('jEpub Advanced Features', () => {
             expect(epub._Info.publisher).toBe('undefined');
             expect(epub._Info.description).toBe('');
             expect(epub._Info.tags).toEqual([]);
+            expect(epub._Info.customMetadata).toEqual({});
         });
     });
 
@@ -137,7 +181,7 @@ describe('jEpub Advanced Features', () => {
                 );
             }
 
-            expect(epub._Pages.length).toBe(50);
+            expect(epub._PageCount).toBe(50);
         });
 
         it('should handle pages with very long content', () => {
@@ -242,11 +286,11 @@ describe('jEpub Advanced Features', () => {
                 epub.add('Main Chapter 2', '<p>Content</p>', 0)
             ).not.toThrow();
 
-            expect(epub._Pages.length).toBe(4);
-            expect(epub._Pages[0].level).toBe(0);
-            expect(epub._Pages[1].level).toBe(1);
-            expect(epub._Pages[2].level).toBe(1);
-            expect(epub._Pages[3].level).toBe(0);
+            expect(epub._PageCount).toBe(4);
+            expect(epub._Toc[0].level).toBe(0);
+            expect(epub._Toc[1].level).toBe(1);
+            expect(epub._Toc[2].level).toBe(1);
+            expect(epub._Toc[3].level).toBe(0);
         });
 
         it('should handle deep nesting levels', () => {
@@ -257,9 +301,9 @@ describe('jEpub Advanced Features', () => {
             epub.add('Level 2', '<p>Content</p>', 2);
             epub.add('Level 3', '<p>Content</p>', 3);
 
-            expect(epub._Pages.length).toBe(4);
+            expect(epub._PageCount).toBe(4);
             for (let i = 0; i < 4; i++) {
-                expect(epub._Pages[i].level).toBe(i);
+                expect(epub._Toc[i].level).toBe(i);
             }
         });
     });

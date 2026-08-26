@@ -401,6 +401,30 @@ class TypeScriptEpubGenerator {
                 'javascript',
                 'tutorial',
             ],
+            customMetadata: [
+                {
+                    name: 'dc:created',
+                    value: new Date().toString(),
+                    renderInTitlePage: false,
+                },
+                {
+                    name: 'dc:creator',
+                    value: 'jEpub',
+                    renderInTitlePage: true,
+                },
+                {
+                    name: 'dc:audience',
+                    value: 'developer',
+                    label: 'Audience',
+                },
+                {
+                    name: 'dc:abstract',
+                    value: 'This EPUB provides a concise demonstration of the capabilities of jEpub.',
+                    renderInTitlePage(item) {
+                        return `<p><b>Abstract: </b>${item.value}</p>`;
+                    },
+                },
+            ],
         };
 
         this.jepub.init(bookDetails);

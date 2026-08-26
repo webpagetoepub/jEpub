@@ -3,6 +3,53 @@
  * Simple EPUB builder library for browsers
  */
 
+import type JSZip from 'jszip';
+
+/**
+ * Custom attributes for an XML element
+ * Represented as key-value pairs where both keys and values are strings
+ */
+export interface jEpubMetadataAttributes {
+    [attrName: string]: string;
+}
+
+/**
+ * A callback function used to render a metadata item into a custom XHTML string for the title page
+ * @param item The current metadata item being processed
+ * @returns A valid XHTML string snippet to be injected into the template
+ */
+export type jEpubMetadataRenderCallback = (item: jEpubMetadataItem) => string;
+
+/**
+ * Represents a single metadata entry compliance with DCMI standards and customizable for EPUB generation.
+ */
+export interface jEpubMetadataItem {
+    /** The qualified name of the XML element (e.g., 'dc:contributor', 'dc:rights', 'meta') */
+    name: string;
+
+    /** The text content or value of the metadata element */
+    value: string;
+
+    /** Optional XML attributes associated with the metadata element (e.g., { 'opf:role': 'aut' }) */
+    attrs?: jEpubMetadataAttributes;
+
+    /**
+     * Defines whether or how the item should be rendered on the HTML title page
+     * - `true`: Renders the item using the library's default built-in layout
+     * - `false`: Completely skips rendering on the title page (only registers in book.opf)
+     * - `Function`: A custom render callback to return a custom XHTML snippet
+     * @default false
+     */
+    renderInTitlePage?: boolean | jEpubMetadataRenderCallback;
+
+    /**
+     * The human-readable display name used as a label on the title page
+     * Only applicable when `renderInTitlePage` is set to `true`
+     * If omitted, falls back to the capitalized element name (excluding prefix)
+     */
+    label?: string;
+}
+
 export interface jEpubInitDetails {
     /** Language code (e.g., 'en', 'fr', 'de', 'ja', 'ar' - supports 21+ languages) */
     i18n?: string;
@@ -16,6 +63,17 @@ export interface jEpubInitDetails {
     description?: string;
     /** Book tags/categories */
     tags?: string[];
+    /** Custom metadata */
+    customMetadata?: jEpubMetadataItem[];
+}
+
+export interface jEpubChapter {
+    /** Chapter title (rendered as the heading) */
+    title: string;
+    /** Chapter content (single HTML string, supports image placeholders) */
+    content: string;
+    /** Hierarchy level of the chapter (defaults to 0) */
+    level?: number;
 }
 
 export interface jEpubUuid {
@@ -38,7 +96,7 @@ export interface jEpubImage {
     /** Path to image within EPUB */
     path: string;
     /** HTML attributes to render on the <img> tag */
-    attributes: Record<string, string>;
+    attributes?: Record<string, string>;
 }
 
 export interface jEpubImages {
@@ -50,6 +108,13 @@ export type jEpubGenerateType =
     | 'arraybuffer'
     | 'uint8array'
     | 'nodebuffer';
+
+export type jEpubGenerateTypeMap = {
+    blob: Blob;
+    arraybuffer: ArrayBuffer;
+    uint8array: Uint8Array;
+    nodebuffer: Buffer;
+};
 
 export interface jEpubGenerateOptions {
     /** Output type */
@@ -76,11 +141,11 @@ export default class jEpub {
     constructor();
 
     /**
-     * Initialize the EPUB with book details
-     * @param details Book initialization details
+     * Initialize the EPUB with book details or existing JSZip instance
+     * @param details Book initialization details or JSZip instance
      * @returns jEpub instance for method chaining
      */
-    init(details: jEpubInitDetails): this;
+    init(details: jEpubInitDetails | JSZip): this;
 
     /**
      * Convert HTML to plain text
@@ -122,7 +187,11 @@ export default class jEpub {
      * @returns jEpub instance for method chaining
      * @throws Error if image data is invalid
      */
-    image(data: Blob | ArrayBuffer, name: string, attributes: Record<string, string>): this;
+    image(
+        data: Blob | ArrayBuffer,
+        name: string,
+        attributes?: Record<string, string>
+    ): this;
 
     /**
      * Add notes page to the book
@@ -147,16 +216,26 @@ export default class jEpub {
     ): this;
 
     /**
+     * Add a single page containing multiple chapters. Each chapter becomes its
+     * own navigation entry pointing to an anchor on its heading inside the
+     * shared page file.
+     * @param chapters Array of chapters ({ title, content, level }) to render into one page
+     * @returns jEpub instance for method chaining
+     * @throws Error if the input or any chapter is invalid
+     */
+    addPage(chapters: jEpubChapter[]): this;
+
+    /**
      * Generate the EPUB file
      * @param type Output format type
      * @param onUpdate Optional callback for progress updates
      * @returns Promise that resolves to the generated EPUB data
      * @throws Error if browser doesn't support the specified type
      */
-    generate(
-        type?: jEpubGenerateType,
+    generate<T extends jEpubGenerateType>(
+        type?: T,
         onUpdate?: jEpubUpdateCallback
-    ): Promise<Blob | ArrayBuffer | Uint8Array | Buffer>;
+    ): Promise<jEpubGenerateTypeMap[T]>;
 }
 
 // Global type augmentation for UMD usage
