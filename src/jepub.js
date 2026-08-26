@@ -385,7 +385,7 @@ export default class jEpub {
             tags: this._Info.tags,
             cover: this._Cover,
             customMetadata: this._Info.customMetadata,
-            pages: this._Pages,
+            pages: this._PageCount,
             notes,
             images: this._Images,
         });
