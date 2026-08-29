@@ -324,7 +324,9 @@ export default class jEpub {
      * Add a single page containing multiple chapters. Each chapter becomes its
      * own navigation entry pointing to an anchor on the chapter's heading inside
      * the shared page file.
-     * @param {Array<Object>} chapters - Array of { title, content, level } objects
+     * @param {Array<Object>} chapters - Array of { title, content, level } objects.
+     *   A chapter's content may be omitted (null/undefined) or empty, in which
+     *   case the chapter renders with its title only.
      * @returns {jEpub} - Returns this instance for method chaining
      * @throws {string} - Throws error if input or any chapter is invalid
      */
@@ -345,19 +347,21 @@ export default class jEpub {
             if (!utils.isObject(chapter)) {
                 throw 'Chapter must be an object';
             }
-            const { title, content, level = 0 } = chapter;
+            const { title, content = null, level = 0 } = chapter;
             if (typeof title !== 'string' || utils.isEmpty(title)) {
                 throw 'Title is empty';
             }
-            if (typeof content !== 'string' || utils.isEmpty(content)) {
-                throw 'Content is empty';
+            if (content != null && typeof content !== 'string') {
+                throw 'Content must be a string or null';
             }
             this._validateLevel(level, previousLevel);
             previousLevel = level;
             return {
                 title,
                 level,
-                content: this._processContent(content),
+                content: utils.isEmpty(content)
+                    ? ''
+                    : this._processContent(content),
                 index: base + k,
             };
         });

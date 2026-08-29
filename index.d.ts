@@ -70,8 +70,11 @@ export interface jEpubInitDetails {
 export interface jEpubChapter {
     /** Chapter title (rendered as the heading) */
     title: string;
-    /** Chapter content (single HTML string, supports image placeholders) */
-    content: string;
+    /**
+     * Chapter content (single HTML string, supports image placeholders).
+     * Omitted, null, or empty content renders a title-only chapter.
+     */
+    content?: string | null;
     /** Hierarchy level of the chapter (defaults to 0) */
     level?: number;
 }

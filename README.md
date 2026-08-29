@@ -238,12 +238,14 @@ jepub.add('Chapter 3', ['Line 1', 'Line 2', 'Line 3']);
 jepub.add('Chapter 3.1', '<p>Content...</p>', 1);
 ```
 
-#### `addPage(chapters: Array<{ title: string; content: string; level?: number }>): this`
+#### `addPage(chapters: Array<{ title: string; content?: string | null; level?: number }>): this`
 
-Add **multiple chapters** to a single page to the book.
+Add **multiple chapters** to a single page to the book. A chapter's `content` is
+optional — if it is omitted, `null`, or empty, the chapter renders with its
+title only.
 
 ```typescript
-// One page, three navigable chapters
+// One page, four navigable chapters
 jepub.addPage([
   // HTML content
   { title: 'Section 1', content: '<p>Content...</p>' },
@@ -251,6 +253,8 @@ jepub.addPage([
   { title: 'Section 1.1', content: '<p>Content...</p>', level: 1 },
   // With images
   { title: 'Section 2', content: '<p>Image: <%= image["myImage"] %></p>' },
+  // Title-only chapter (no content)
+  { title: 'Section 3' },
 ]);
 ```
 
