@@ -637,16 +637,43 @@ describe('jEpub Class', () => {
             ).toThrow('Chapter must be an object');
         });
 
-        it('should throw for empty title or content', () => {
+        it('should throw for empty title', () => {
             expect(() =>
                 epub.addPage([{ title: '', content: '<p>A</p>' }])
             ).toThrow('Title is empty');
-            expect(() => epub.addPage([{ title: 'A', content: '' }])).toThrow(
-                'Content is empty'
+        });
+
+        it('should render a title-only chapter when content is empty or missing', async () => {
+            const result = epub.addPage([
+                { title: 'Empty string', content: '' },
+                { title: 'Whitespace', content: '   ' },
+                { title: 'Null', content: null },
+                { title: 'Missing' },
+            ]);
+
+            expect(result).toBe(epub);
+            expect(epub._PageCount).toBe(1);
+            expect(epub._Toc.length).toBe(4);
+
+            const page = await readZip(epub, 'OEBPS/page-0.html');
+            expect(page).toContain('Empty string');
+            expect(page).toContain('Whitespace');
+            expect(page).toContain('Null');
+            expect(page).toContain('Missing');
+            // Empty content should not emit the content wrapper
+            expect(page).not.toContain('chapter-ugc');
+        });
+
+        it('should throw when content is a non-string value', () => {
+            expect(() => epub.addPage([{ title: 'A', content: 123 }])).toThrow(
+                'Content must be a string or null'
             );
-            expect(() => epub.addPage([{ title: 'A' }])).toThrow(
-                'Content is empty'
+            expect(() => epub.addPage([{ title: 'A', content: {} }])).toThrow(
+                'Content must be a string or null'
             );
+            expect(() =>
+                epub.addPage([{ title: 'A', content: ['<p>A</p>'] }])
+            ).toThrow('Content must be a string or null');
         });
 
         it('should throw for an invalid level', () => {
@@ -659,9 +686,9 @@ describe('jEpub Class', () => {
             expect(() =>
                 epub.addPage([
                     { title: 'A', content: '<p>A</p>' },
-                    { title: 'B', content: '' },
+                    { title: 'B', content: 123 },
                 ])
-            ).toThrow('Content is empty');
+            ).toThrow('Content must be a string or null');
             expect(epub._PageCount).toBe(0);
             expect(epub._Toc.length).toBe(0);
             expect(epub._Zip['OEBPS/page-0.html']).toBeFalsy();
